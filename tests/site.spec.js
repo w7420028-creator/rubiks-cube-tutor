@@ -85,5 +85,7 @@ test('algorithm playback is only active when a step has an algorithm and plays t
   await expect(page.getByRole('button', { name: 'Am Modell abspielen' })).toBeEnabled();
   const movesBefore = await page.evaluate(() => window.rubiksTutorState.moves);
   await page.getByRole('button', { name: 'Am Modell abspielen' }).click();
-  await expect.poll(() => page.evaluate(() => window.rubiksTutorState.moves), { timeout: 5000 }).toBe(movesBefore + 4);
+  await expect(page.getByText(/Jetzt:|Sequenz:/)).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.rubiksTutorState.moves), { timeout: 8000 }).toBe(movesBefore + 4);
+  await expect(page.getByText('Fertig. Du kannst die Sequenz nochmal abspielen.')).toBeVisible();
 });

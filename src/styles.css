@@ -310,6 +310,15 @@ button:active {
   padding-inline: 1rem;
 }
 
+.play-status {
+  min-height: 1.6rem;
+  margin: 0.75rem 0 0;
+  color: var(--red) !important;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
 .info-grid {
   margin-top: 1rem;
 }

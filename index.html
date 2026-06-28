@@ -8,7 +8,7 @@
       content="Interaktives deutsches Tutorial mit 3D-Zauberwuerfel fuer die Anfaenger-Methode."
     />
     <title>Zauberwuerfel loesen lernen</title>
-    <link rel="stylesheet" href="./src/styles.css" />
+    <link rel="stylesheet" href="./src/styles.css?v=playback-2" />
   </head>
   <body>
     <a class="skip-link" href="#tutorial">Zum Tutorial springen</a>
@@ -83,6 +83,7 @@
           <article>
             <h3>Algorithmus</h3>
             <p id="step-algorithm" class="algorithm"></p>
+            <p id="play-status" class="play-status" aria-live="polite"></p>
             <button type="button" id="play-algorithm" class="algorithm-button">Am Modell abspielen</button>
           </article>
           <article>
@@ -129,6 +130,6 @@
       </section>
     </main>
 
-    <script type="module" src="./src/app.js"></script>
+    <script type="module" src="./src/app.js?v=playback-2"></script>
   </body>
 </html>

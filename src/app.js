@@ -218,7 +218,7 @@ function parseAlgorithm(algorithm) {
   }) ?? [];
 }
 
-function performMove(move) {
+function performMove(move, duration = 230) {
   const definition = moveMap[move];
   if (!definition || busy) return Promise.resolve(false);
   busy = true;
@@ -231,7 +231,6 @@ function performMove(move) {
     display.add(pivot);
     selected.forEach((cubie) => pivot.attach(cubie.mesh));
 
-    const duration = 230;
     const start = performance.now();
     const target = turns * (Math.PI / 2);
 
@@ -265,11 +264,20 @@ function performMove(move) {
   });
 }
 
-async function runSequence(sequence) {
+function wait(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+async function runSequence(sequence, options = {}) {
+  const duration = options.duration ?? 230;
+  const pause = options.pause ?? 40;
   for (const move of sequence) {
-    const played = await performMove(move);
+    options.onMove?.(move);
+    const played = await performMove(move, duration);
     if (!played) return false;
+    if (pause > 0) await wait(pause);
   }
+  options.onDone?.();
   return true;
 }
 
@@ -277,6 +285,7 @@ function updateLesson() {
   const step = steps[activeStep];
   const sequence = parseAlgorithm(step.algorithm);
   const playButton = document.querySelector('#play-algorithm');
+  const playStatus = document.querySelector('#play-status');
   document.querySelector('#step-index').textContent = String(activeStep + 1);
   document.querySelector('#step-title').textContent = step.title;
   document.querySelector('#step-goal').textContent = step.goal;
@@ -287,6 +296,7 @@ function updateLesson() {
   document.querySelector('#next-step').disabled = activeStep === steps.length - 1;
   playButton.disabled = sequence.length === 0;
   playButton.textContent = sequence.length === 0 ? 'Kein Algorithmus' : 'Am Modell abspielen';
+  playStatus.textContent = sequence.length === 0 ? 'Dieser Schritt ist intuitiv: Kanten einzeln einsetzen.' : '';
   exposeState();
 }
 
@@ -305,11 +315,22 @@ document.querySelector('#reset-button').addEventListener('click', () => {
 
 document.querySelector('#play-algorithm').addEventListener('click', async () => {
   const playButton = document.querySelector('#play-algorithm');
+  const playStatus = document.querySelector('#play-status');
   const sequence = parseAlgorithm(steps[activeStep].algorithm);
   if (sequence.length === 0) return;
   playButton.disabled = true;
   playButton.textContent = 'Laeuft...';
-  await runSequence(sequence);
+  playStatus.textContent = `Sequenz: ${sequence.join(' ')}`;
+  await runSequence(sequence, {
+    duration: 720,
+    pause: 180,
+    onMove: (move) => {
+      playStatus.textContent = `Jetzt: ${move}    Sequenz: ${sequence.join(' ')}`;
+    },
+    onDone: () => {
+      playStatus.textContent = 'Fertig. Du kannst die Sequenz nochmal abspielen.';
+    }
+  });
   playButton.disabled = false;
   playButton.textContent = 'Am Modell abspielen';
 });
