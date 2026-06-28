@@ -86,6 +86,8 @@ let cubies = [];
 let moves = 0;
 let busy = false;
 let activeStep = 0;
+let moveHistory = [];
+let solving = false;
 const pivot = new THREE.Group();
 display.add(pivot);
 
@@ -142,12 +144,33 @@ function buildCube() {
         const mesh = new THREE.Mesh(geometry, materialsFor(x, y, z));
         mesh.position.set(x, y, z);
         root.add(mesh);
-        cubies.push({ mesh, coord: { x, y, z } });
+        cubies.push({ mesh, coord: { x, y, z }, home: { x, y, z } });
       }
     }
   }
   moves = 0;
+  moveHistory = [];
   exposeState();
+}
+
+function normalizedAngle(angle) {
+  return ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+}
+
+function isZeroRotation(angle) {
+  const normalized = normalizedAngle(angle);
+  return normalized < 0.001 || Math.abs(normalized - Math.PI * 2) < 0.001;
+}
+
+function isCubeSolved() {
+  return cubies.every((cubie) => (
+    cubie.coord.x === cubie.home.x &&
+    cubie.coord.y === cubie.home.y &&
+    cubie.coord.z === cubie.home.z &&
+    isZeroRotation(cubie.mesh.rotation.x) &&
+    isZeroRotation(cubie.mesh.rotation.y) &&
+    isZeroRotation(cubie.mesh.rotation.z)
+  ));
 }
 
 function exposeState() {
@@ -155,8 +178,12 @@ function exposeState() {
     cubies: cubies.length,
     steps: steps.length,
     moves,
-    activeStep
+    activeStep,
+    history: moveHistory.length,
+    isSolved: isCubeSolved(),
+    solving
   };
+  syncControlState();
 }
 
 function resize() {
@@ -218,7 +245,9 @@ function parseAlgorithm(algorithm) {
   }) ?? [];
 }
 
-function performMove(move, duration = 230) {
+function performMove(move, options = {}) {
+  const duration = options.duration ?? 230;
+  const recordHistory = options.recordHistory ?? true;
   const definition = moveMap[move];
   if (!definition || busy) return Promise.resolve(false);
   busy = true;
@@ -255,6 +284,7 @@ function performMove(move, duration = 230) {
       });
       pivot.rotation.set(0, 0, 0);
       moves += 1;
+      if (recordHistory) moveHistory.push(move);
       busy = false;
       exposeState();
       resolve(true);
@@ -271,14 +301,25 @@ function wait(ms) {
 async function runSequence(sequence, options = {}) {
   const duration = options.duration ?? 230;
   const pause = options.pause ?? 40;
+  const recordHistory = options.recordHistory ?? true;
   for (const move of sequence) {
     options.onMove?.(move);
-    const played = await performMove(move, duration);
+    const played = await performMove(move, { duration, recordHistory });
     if (!played) return false;
     if (pause > 0) await wait(pause);
   }
   options.onDone?.();
   return true;
+}
+
+function invertMove(move) {
+  if (move.endsWith("'")) return move.slice(0, -1);
+  return `${move}'`;
+}
+
+function syncControlState() {
+  const solveButton = document.querySelector('#solve-button');
+  if (solveButton) solveButton.disabled = moveHistory.length === 0 || busy || solving;
 }
 
 function updateLesson() {
@@ -297,6 +338,7 @@ function updateLesson() {
   playButton.disabled = sequence.length === 0;
   playButton.textContent = sequence.length === 0 ? 'Kein Algorithmus' : 'Am Modell abspielen';
   playStatus.textContent = sequence.length === 0 ? 'Dieser Schritt ist intuitiv: Kanten einzeln einsetzen.' : '';
+  syncControlState();
   exposeState();
 }
 
@@ -311,6 +353,30 @@ document.querySelector('#scramble-button').addEventListener('click', () => {
 
 document.querySelector('#reset-button').addEventListener('click', () => {
   buildCube();
+});
+
+document.querySelector('#solve-button').addEventListener('click', async () => {
+  const solveButton = document.querySelector('#solve-button');
+  const playStatus = document.querySelector('#play-status');
+  if (moveHistory.length === 0 || busy || solving) return;
+  const solution = [...moveHistory].reverse().map(invertMove);
+  solving = true;
+  solveButton.disabled = true;
+  solveButton.textContent = 'Solving...';
+  playStatus.textContent = `Loese: ${solution.join(' ')}`;
+  await runSequence(solution, {
+    duration: 520,
+    pause: 120,
+    recordHistory: false,
+    onMove: (move) => {
+      playStatus.textContent = `Loese: ${move}    Rest: ${solution.join(' ')}`;
+    }
+  });
+  moveHistory = [];
+  solving = false;
+  solveButton.textContent = 'Solve';
+  playStatus.textContent = 'Geloest.';
+  exposeState();
 });
 
 document.querySelector('#play-algorithm').addEventListener('click', async () => {

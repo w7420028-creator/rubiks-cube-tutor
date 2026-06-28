@@ -89,3 +89,23 @@ test('algorithm playback is only active when a step has an algorithm and plays t
   await expect.poll(() => page.evaluate(() => window.rubiksTutorState.moves), { timeout: 8000 }).toBe(movesBefore + 4);
   await expect(page.getByText('Fertig. Du kannst die Sequenz nochmal abspielen.')).toBeVisible();
 });
+
+test('solve button reverses the move history back to a solved cube', async ({ page }) => {
+  await page.goto('/');
+  await expect.poll(() => page.evaluate(() => window.rubiksTutorState?.cubies)).toBe(27);
+  await expect(page.getByRole('button', { name: 'Solve' })).toBeDisabled();
+
+  await page.getByRole('button', { name: 'R', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.rubiksTutorState.moves)).toBe(1);
+  await page.getByRole('button', { name: 'U', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.rubiksTutorState.moves)).toBe(2);
+  await expect(page.getByRole('button', { name: 'Solve' })).toBeEnabled();
+  await expect.poll(() => page.evaluate(() => window.rubiksTutorState.isSolved)).toBe(false);
+
+  await page.getByRole('button', { name: 'Solve' }).click();
+  await expect(page.getByText(/Loese:/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Solving...' })).toBeDisabled();
+  await expect.poll(() => page.evaluate(() => window.rubiksTutorState.isSolved), { timeout: 6000 }).toBe(true);
+  await expect(page.getByRole('button', { name: 'Solve' })).toBeDisabled();
+  await expect(page.getByText('Geloest.')).toBeVisible();
+});

@@ -194,7 +194,8 @@ button {
 }
 
 #scramble-button,
-#reset-button {
+#reset-button,
+#solve-button {
   min-width: 92px;
   padding-inline: 0.8rem;
 }
@@ -209,10 +210,18 @@ button:active {
 }
 
 #scramble-button,
-#next-step {
+#next-step,
+#solve-button {
   border-color: #111316;
   background: #111316;
   color: white;
+}
+
+#solve-button:disabled {
+  border-color: #bbc4d0;
+  background: #ffffff;
+  color: #8d96a4;
+  cursor: not-allowed;
 }
 
 .label-short {
@@ -423,7 +432,8 @@ button:active {
   }
 
   #scramble-button,
-  #reset-button {
+  #reset-button,
+  #solve-button {
     min-width: 0;
   }
 
