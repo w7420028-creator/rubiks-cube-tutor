@@ -74,3 +74,16 @@ test('keeps the 3D model visible while reading lesson steps on mobile', async ({
   expect(mobileTutor.lessonTop).toBeGreaterThan(mobileTutor.canvasBottom);
   expect(mobileTutor.lessonGridColumns.split(' ').length).toBe(1);
 });
+
+test('algorithm playback is only active when a step has an algorithm and plays the moves', async ({ page }) => {
+  await page.goto('/');
+  await expect.poll(() => page.evaluate(() => window.rubiksTutorState?.cubies)).toBe(27);
+
+  await expect(page.getByRole('button', { name: 'Kein Algorithmus' })).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Weiter' }).click();
+  await expect(page.getByRole('button', { name: 'Am Modell abspielen' })).toBeEnabled();
+  const movesBefore = await page.evaluate(() => window.rubiksTutorState.moves);
+  await page.getByRole('button', { name: 'Am Modell abspielen' }).click();
+  await expect.poll(() => page.evaluate(() => window.rubiksTutorState.moves), { timeout: 5000 }).toBe(movesBefore + 4);
+});

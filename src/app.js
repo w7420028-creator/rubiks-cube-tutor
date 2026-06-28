@@ -220,62 +220,63 @@ function parseAlgorithm(algorithm) {
 
 function performMove(move) {
   const definition = moveMap[move];
-  if (!definition || busy) return;
+  if (!definition || busy) return Promise.resolve(false);
   busy = true;
 
-  const { axis, layer, turns } = definition;
-  const selected = cubies.filter((cubie) => cubie.coord[axis] === layer);
-  pivot.rotation.set(0, 0, 0);
-  pivot.position.set(0, 0, 0);
-  display.add(pivot);
-  selected.forEach((cubie) => pivot.attach(cubie.mesh));
+  return new Promise((resolve) => {
+    const { axis, layer, turns } = definition;
+    const selected = cubies.filter((cubie) => cubie.coord[axis] === layer);
+    pivot.rotation.set(0, 0, 0);
+    pivot.position.set(0, 0, 0);
+    display.add(pivot);
+    selected.forEach((cubie) => pivot.attach(cubie.mesh));
 
-  const duration = 230;
-  const start = performance.now();
-  const target = turns * (Math.PI / 2);
+    const duration = 230;
+    const start = performance.now();
+    const target = turns * (Math.PI / 2);
 
-  function animate(now) {
-    const t = Math.min(1, (now - start) / duration);
-    const eased = 1 - Math.pow(1 - t, 3);
-    pivot.rotation[axis] = target * eased;
-    if (t < 1) {
-      requestAnimationFrame(animate);
-      return;
+    function animate(now) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      pivot.rotation[axis] = target * eased;
+      if (t < 1) {
+        requestAnimationFrame(animate);
+        return;
+      }
+
+      pivot.updateMatrixWorld();
+      selected.forEach((cubie) => {
+        display.attach(cubie.mesh);
+        rotateCoord(cubie.coord, axis, turns);
+        cubie.mesh.position.set(cubie.coord.x, cubie.coord.y, cubie.coord.z);
+        cubie.mesh.rotation.x = Math.round(cubie.mesh.rotation.x / (Math.PI / 2)) * (Math.PI / 2);
+        cubie.mesh.rotation.y = Math.round(cubie.mesh.rotation.y / (Math.PI / 2)) * (Math.PI / 2);
+        cubie.mesh.rotation.z = Math.round(cubie.mesh.rotation.z / (Math.PI / 2)) * (Math.PI / 2);
+        root.attach(cubie.mesh);
+      });
+      pivot.rotation.set(0, 0, 0);
+      moves += 1;
+      busy = false;
+      exposeState();
+      resolve(true);
     }
 
-    pivot.updateMatrixWorld();
-    selected.forEach((cubie) => {
-      display.attach(cubie.mesh);
-      rotateCoord(cubie.coord, axis, turns);
-      cubie.mesh.position.set(cubie.coord.x, cubie.coord.y, cubie.coord.z);
-      cubie.mesh.rotation.x = Math.round(cubie.mesh.rotation.x / (Math.PI / 2)) * (Math.PI / 2);
-      cubie.mesh.rotation.y = Math.round(cubie.mesh.rotation.y / (Math.PI / 2)) * (Math.PI / 2);
-      cubie.mesh.rotation.z = Math.round(cubie.mesh.rotation.z / (Math.PI / 2)) * (Math.PI / 2);
-      root.attach(cubie.mesh);
-    });
-    pivot.rotation.set(0, 0, 0);
-    moves += 1;
-    busy = false;
-    exposeState();
-  }
-
-  requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
+  });
 }
 
-function runSequence(sequence, index = 0) {
-  if (index >= sequence.length) return;
-  const before = moves;
-  performMove(sequence[index]);
-  const timer = window.setInterval(() => {
-    if (moves !== before) {
-      window.clearInterval(timer);
-      runSequence(sequence, index + 1);
-    }
-  }, 40);
+async function runSequence(sequence) {
+  for (const move of sequence) {
+    const played = await performMove(move);
+    if (!played) return false;
+  }
+  return true;
 }
 
 function updateLesson() {
   const step = steps[activeStep];
+  const sequence = parseAlgorithm(step.algorithm);
+  const playButton = document.querySelector('#play-algorithm');
   document.querySelector('#step-index').textContent = String(activeStep + 1);
   document.querySelector('#step-title').textContent = step.title;
   document.querySelector('#step-goal').textContent = step.goal;
@@ -284,6 +285,8 @@ function updateLesson() {
   document.querySelector('#step-check').textContent = step.check;
   document.querySelector('#prev-step').disabled = activeStep === 0;
   document.querySelector('#next-step').disabled = activeStep === steps.length - 1;
+  playButton.disabled = sequence.length === 0;
+  playButton.textContent = sequence.length === 0 ? 'Kein Algorithmus' : 'Am Modell abspielen';
   exposeState();
 }
 
@@ -300,9 +303,15 @@ document.querySelector('#reset-button').addEventListener('click', () => {
   buildCube();
 });
 
-document.querySelector('#play-algorithm').addEventListener('click', () => {
+document.querySelector('#play-algorithm').addEventListener('click', async () => {
+  const playButton = document.querySelector('#play-algorithm');
   const sequence = parseAlgorithm(steps[activeStep].algorithm);
-  runSequence(sequence);
+  if (sequence.length === 0) return;
+  playButton.disabled = true;
+  playButton.textContent = 'Laeuft...';
+  await runSequence(sequence);
+  playButton.disabled = false;
+  playButton.textContent = 'Am Modell abspielen';
 });
 
 document.querySelector('#prev-step').addEventListener('click', () => {
