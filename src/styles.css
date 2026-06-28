@@ -215,6 +215,10 @@ button:active {
   color: white;
 }
 
+.label-short {
+  display: none;
+}
+
 .lesson-panel,
 .info-grid {
   width: min(1180px, calc(100% - 2rem));
@@ -350,30 +354,128 @@ button:active {
 }
 
 @media (max-width: 620px) {
-  .topbar {
-    align-items: flex-start;
-    flex-direction: column;
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
   }
 
-  .nav-links {
-    justify-content: flex-start;
+  .topbar {
+    display: none;
+  }
+
+  main {
+    height: 100dvh;
+    overflow-y: auto;
+    padding: calc(max(340px, 46dvh) + 1rem) 0 2rem;
+    scroll-padding-top: calc(max(340px, 46dvh) + 1rem);
   }
 
   .trainer-shell {
-    padding: 1rem;
+    display: block;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .trainer-copy {
+    display: none;
+  }
+
+  .cube-stage {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 30;
+    height: max(340px, 46dvh);
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(17, 19, 22, 0.12);
+    background: rgba(247, 249, 252, 0.96);
+    box-shadow: 0 16px 52px rgba(28, 40, 55, 0.18);
+    backdrop-filter: blur(16px);
   }
 
   #cube-canvas {
-    min-height: 320px;
-    height: 54dvh;
+    height: calc(100% - 112px);
+    min-height: 230px;
+    border-radius: 8px;
+    box-shadow: none;
+  }
+
+  .cube-controls {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.4rem;
+    margin-top: 0.55rem;
+  }
+
+  button {
+    min-width: 0;
+    min-height: 44px;
+    font-size: 0.86rem;
+  }
+
+  #scramble-button,
+  #reset-button {
+    min-width: 0;
+  }
+
+  .label-full {
+    display: none;
+  }
+
+  .label-short {
+    display: inline;
+  }
+
+  .lesson-panel,
+  .info-grid {
+    width: calc(100% - 1rem);
+  }
+
+  .lesson-panel {
+    padding: 1rem;
+  }
+
+  .lesson-panel,
+  .lesson-grid article,
+  .info-grid article {
+    border-radius: 8px;
   }
 
   .lesson-header {
     flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .lesson-header h2 {
+    font-size: clamp(1.8rem, 10vw, 2.7rem);
+  }
+
+  .info-grid h2 {
+    font-size: clamp(1.55rem, 8vw, 2.25rem);
   }
 
   .lesson-nav {
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
+  .lesson-nav button {
+    padding-inline: 0.75rem;
+  }
+
+  .lesson-goal {
+    font-size: 1rem;
+  }
+
+  .algorithm {
+    display: block;
+    width: 100%;
+    font-size: 0.95rem;
+  }
+
+  .algorithm-button {
+    width: 100%;
   }
 }
 
