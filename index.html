@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Interaktives deutsches Tutorial mit 3D-Zauberwuerfel fuer die Anfaenger-Methode."
+    />
+    <title>Zauberwuerfel loesen lernen</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#tutorial">Zum Tutorial springen</a>
+    <nav class="topbar" aria-label="Hauptnavigation">
+      <a href="#trainer" class="brand">Cube Tutor</a>
+      <div class="nav-links" aria-label="Abschnitte">
+        <a href="#trainer">3D-Modell</a>
+        <a href="#tutorial">Methode</a>
+        <a href="#notation">Notation</a>
+        <a href="#practice">Ueben</a>
+      </div>
+    </nav>
+
+    <main>
+      <section class="trainer-shell" id="trainer" aria-labelledby="page-title">
+        <div class="trainer-copy">
+          <p class="eyebrow">Anfaenger-Methode</p>
+          <h1 id="page-title">Zauberwuerfel loesen lernen</h1>
+          <p class="lead">
+            Ein kompakter Lerntrainer: links die Schritte, rechts ein drehbares
+            3D-Modell. Uebe die Algorithmen direkt am Modell, bis die Bewegung
+            nicht mehr nach Denken aussieht.
+          </p>
+          <div class="progress-strip" aria-label="Lernfortschritt">
+            <span>1 Kreuz</span>
+            <span>2 Ecken</span>
+            <span>3 Kanten</span>
+            <span>4 Gelb</span>
+            <span>5 Finish</span>
+          </div>
+        </div>
+
+        <div class="cube-stage" aria-label="Interaktives 3D-Modell">
+          <canvas id="cube-canvas" aria-label="Drehbares 3D-Modell des Zauberwuerfels"></canvas>
+          <div class="cube-controls" aria-label="Cube-Steuerung">
+            <button type="button" data-move="U">U</button>
+            <button type="button" data-move="U'">U'</button>
+            <button type="button" data-move="R">R</button>
+            <button type="button" data-move="R'">R'</button>
+            <button type="button" data-move="F">F</button>
+            <button type="button" data-move="F'">F'</button>
+            <button type="button" data-move="L">L</button>
+            <button type="button" data-move="L'">L'</button>
+            <button type="button" data-move="D">D</button>
+            <button type="button" data-move="D'">D'</button>
+            <button type="button" id="scramble-button">Scramble</button>
+            <button type="button" id="reset-button">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="lesson-panel" id="tutorial" aria-live="polite">
+        <div class="lesson-header">
+          <div>
+            <p class="eyebrow">Schritt <span id="step-index">1</span> von 7</p>
+            <h2 id="step-title">1. Weisses Kreuz</h2>
+          </div>
+          <div class="lesson-nav">
+            <button type="button" id="prev-step">Zurueck</button>
+            <button type="button" id="next-step">Weiter</button>
+          </div>
+        </div>
+        <p id="step-goal" class="lesson-goal"></p>
+        <div class="lesson-grid">
+          <article>
+            <h3>Was du tust</h3>
+            <p id="step-action"></p>
+          </article>
+          <article>
+            <h3>Algorithmus</h3>
+            <p id="step-algorithm" class="algorithm"></p>
+            <button type="button" id="play-algorithm" class="algorithm-button">Am Modell abspielen</button>
+          </article>
+          <article>
+            <h3>Kontrolle</h3>
+            <p id="step-check"></p>
+          </article>
+        </div>
+      </section>
+
+      <section class="info-grid">
+        <article id="notation">
+          <p class="eyebrow">Notation</p>
+          <h2>So liest du die Zuege</h2>
+          <dl class="notation-list">
+            <div><dt>R / L</dt><dd>rechte oder linke Seite im Uhrzeigersinn.</dd></div>
+            <div><dt>U / D</dt><dd>obere oder untere Ebene im Uhrzeigersinn.</dd></div>
+            <div><dt>F / B</dt><dd>vordere oder hintere Seite im Uhrzeigersinn.</dd></div>
+            <div><dt>'</dt><dd>Gegen den Uhrzeigersinn, zum Beispiel R'.</dd></div>
+            <div><dt>2</dt><dd>Doppelte Drehung, zum Beispiel U2.</dd></div>
+          </dl>
+        </article>
+
+        <article id="practice">
+          <p class="eyebrow">Ueben</p>
+          <h2>Trainingsplan fuer die erste Woche</h2>
+          <ol class="practice-list">
+            <li>Tag 1: Nur Notation und weisses Kreuz, ohne Timer.</li>
+            <li>Tag 2: Weisse Ecken, bis jeder Einsatz sauber sitzt.</li>
+            <li>Tag 3: Zweite Ebene mit dem linken und rechten Kanten-Algorithmus.</li>
+            <li>Tag 4: Gelbes Kreuz und gelbe Flaeche, Muster erkennen.</li>
+            <li>Tag 5-7: Letzte Ebene komplett, dann langsam Zeit messen.</li>
+          </ol>
+        </article>
+
+        <article>
+          <p class="eyebrow">Fehler</p>
+          <h2>Wenn etwas nicht passt</h2>
+          <ul class="mistake-list">
+            <li>Ein einzelnes verdrehtes Eckteil ist fast immer ein falsch eingesetztes Teil, kein Spezialfall.</li>
+            <li>Halte Weiss unten, sobald die erste Ebene fertig ist. Sonst lernst du jeden Schritt doppelt.</li>
+            <li>Algorithmen erst langsam korrekt, dann schneller. Speed ohne Orientierung macht Rueckschritte.</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

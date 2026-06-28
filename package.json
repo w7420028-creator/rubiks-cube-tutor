@@ -1,0 +1,14 @@
+{
+  "name": "rubiks-cube-tutor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "serve": "vite --host 127.0.0.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "vite": "^7.2.7"
+  }
+}
